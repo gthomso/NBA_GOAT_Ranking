@@ -1,6 +1,7 @@
 class Player:
+    
+        
     name = ''
-
     all_stars = 0
     championships = 0
     mvp = 0
@@ -12,6 +13,6 @@ class Player:
     allDef = 0
     statTitles = 0
     careerPER = 0
-
     runningScore = 0
     finalGreatnessScore = 0
+    

@@ -2,11 +2,14 @@ from bs4 import BeautifulSoup
 import requests
 import string
 import time
-from Player import *
+from GoatCalculations import *
 
-playerList1 = list()
-playerList2 = list()
-playerList3 = list()
+# The player lists help iteratively build the player base, and narrows it down over each iteration.
+#playerList1 = list()
+#playerList2 = list()
+#playerList3 = list()
+# the Player Name List is just a tool to insure that we don't have repeats, and is just a quicker way to
+# look up the information.
 playerNameList = list()
 
 def PullData():
@@ -16,6 +19,7 @@ def PullData():
 def GetList1():
     tempStrChampionships = ''
     tempStrAllStars = ''
+    indexCounter = 0
     #finding players with 3+ chips
     html_text = requests.get('https://www.basketball-reference.com/leaders/most_championships.html').text
     FindPlayersWithAtLeast3Chips(html_text)
@@ -25,11 +29,24 @@ def GetList1():
     html_text = requests.get('https://www.basketball-reference.com/awards/all_star_by_player.html').text
     FindPlayersAllStarSelections(html_text)
 
+    #skipping indexes upon deletion
+    #indexes to automatically correct for popping which shifts the index counter
+    playerList1 = FilterPlayerList1()
+    # Will want something to refine the list down to 300 players
+    # Then will want something to sort the list by total accolades.
+    playerList1.sort(key=sortRunningScore, reverse = True)
+    while len(playerList1) > 300:
+        playerList1.pop()
+    # Printing function can be phased out or made to be a function later on.
     for each in playerList1:
+        indexCounter += 1
         tempStrChampionships = str(each.championships)
         tempStrAllStars = str(each.all_stars)
-        print(each.name + '\t' + tempStrChampionships + '\t' + tempStrAllStars + '\n')
+        tempStrRunningScore = str(each.runningScore)
+        print(str(indexCounter), '\t', each.name, '\t', tempStrChampionships, '\t', tempStrAllStars, '\t', tempStrRunningScore)
 
+def sortRunningScore(player):
+    return player.runningScore
 
 def FindPlayersWithAtLeast3Chips(html_text):
     tempPlayerName = ''
@@ -48,7 +65,6 @@ def FindPlayersWithAtLeast3Chips(html_text):
             tempPlayer.name = tempPlayerName
             tempPlayer.championships = everyPlayer.get_text()
             playerList1.append(tempPlayer)
-            print(tempPlayer.name + ' ' + tempPlayer.championships + '\n')
     
 
 def FindPlayersAllStarSelections(html_text):
