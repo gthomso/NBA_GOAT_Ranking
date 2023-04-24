@@ -1,20 +1,27 @@
 from Player import *
 
-firstPlayerList = list()
-FinalList = list()
+PlayerList1 = list()
+PlayerList2 = list()
+PlayerList3 = list()
 
 
-def RunningScoreForFirstIteration(inputPlayer):
+def RunningScoreCalc(inputPlayer):
     inputPlayer.runningScore = 3*int(inputPlayer.all_stars) + 6*int(inputPlayer.championships)
-    inputPlayer.runningScore += 15*int(inputPlayer.mvp)
+    inputPlayer.runningScore += 15*int(inputPlayer.mvp) + 4*int(inputPlayer.asmvp)
     return inputPlayer
 
-def FilterPlayerList1():
+def FilterPlayerList(runningScoreMin, maxPlayers, playerList):
     tempPlayerList = list()
-    for everyPlayer in firstPlayerList:
-        everyPlayer = RunningScoreForFirstIteration(everyPlayer)
+    for everyPlayer in playerList:
+        everyPlayer = RunningScoreCalc(everyPlayer)
         # Arbitrary cut off to be determined later
-        if everyPlayer.runningScore >= 11:
+        if everyPlayer.runningScore >= runningScoreMin:
             tempPlayerList.append(everyPlayer)
+            if len(tempPlayerList) >= maxPlayers:
+                tempPlayerList.sort(key=sortRunningScore, reverse = True)
+                return tempPlayerList
     return tempPlayerList
 
+
+def sortRunningScore(player):
+    return player.runningScore

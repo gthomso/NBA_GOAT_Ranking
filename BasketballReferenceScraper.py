@@ -12,44 +12,43 @@ from GoatCalculations import *
 # look up the information.
 playerNameList = list()
 
+
 def PullData():
+    global PlayerList1, PlayerList2
+    indexCounter = 0
     GetList1()
+    PlayerList1 = FilterPlayerList(9, 300, PlayerList1)
+
+    InitializePlayerList2()
+    GetList2()
+    PlayerList2 = FilterPlayerList(18, 150, PlayerList2)
+    for each in PlayerList2:
+        indexCounter += 1
+        tempStrRunningScore = str(each.runningScore)
+        print(str(indexCounter), '\t', each.name, str(each.asmvp), tempStrRunningScore)
     
 
 def GetList1():
-    tempStrChampionships = ''
-    tempStrAllStars = ''
-    indexCounter = 0
     #finding players with 3+ chips
     html_text = requests.get('https://www.basketball-reference.com/leaders/most_championships.html').text
     FindPlayersWithAtLeast3Chips(html_text)
 
     # Next we need to add all players with 3 or more All-star games
-    #commented the other part out because currently testing the All star portion
     html_text = requests.get('https://www.basketball-reference.com/awards/all_star_by_player.html').text
     FindPlayersAllStarSelections(html_text)
 
     #Filter past the Bill Walton problem, by adding MVPs
     html_text = requests.get('https://www.basketball-reference.com/awards/mvp.html').text
     FindPlayersMVPs(html_text)
-    #skipping indexes upon deletion
-    #indexes to automatically correct for popping which shifts the index counter
-    playerList1 = FilterPlayerList1()
-    # Will want something to refine the list down to 300 players
-    # Then will want something to sort the list by total accolades.
-    playerList1.sort(key=sortRunningScore, reverse = True)
-    while len(playerList1) > 300:
-        playerList1.pop()
-    # Printing function can be phased out or made to be a function later on.
-    for each in playerList1:
-        indexCounter += 1
-        tempStrChampionships = str(each.championships)
-        tempStrAllStars = str(each.all_stars)
-        tempStrRunningScore = str(each.runningScore)
-        print(str(indexCounter), '\t', each.name, tempStrRunningScore)
 
-def sortRunningScore(player):
-    return player.runningScore
+
+# Refines the existing list and tries to get it under 150 players
+# Takes into account all catagories except for cPER and total Championships
+def GetList2():
+    html_text = requests.get('https://www.basketball-reference.com/awards/all_star_mvp.html').text
+    FindPlayerAllStarMVPs(html_text)
+
+
 
 def FindPlayersWithAtLeast3Chips(html_text):
     tempPlayerName = ''
@@ -67,7 +66,7 @@ def FindPlayersWithAtLeast3Chips(html_text):
             tempPlayer = Player()
             tempPlayer.name = tempPlayerName
             tempPlayer.championships = everyPlayer.get_text()
-            firstPlayerList.append(tempPlayer)
+            PlayerList1.append(tempPlayer)
     
 
 def FindPlayersAllStarSelections(html_text):
@@ -78,9 +77,9 @@ def FindPlayersAllStarSelections(html_text):
     for everyPlayer in bodyOfPlayers.find_all('tr'):
         tempPlayer = IndexAllStarSelectionNameAndNumber(everyPlayer)
         if tempPlayer.name not in playerNameList:
-            firstPlayerList.append(tempPlayer)
+            PlayerList1.append(tempPlayer)
         else:
-            for each in firstPlayerList:
+            for each in PlayerList1:
                 if each.name == tempPlayer.name:
                     each.all_stars = tempPlayer.all_stars
                     break
@@ -95,14 +94,29 @@ def FindPlayersMVPs(html_text):
     for everyPlayer in bodyOfPlayers.find_all('tr'):
         tempPlayer = IndexMVPTable(everyPlayer, 1)
         if tempPlayer.name not in playerNameList:
-            firstPlayerList.append(tempPlayer)
+            PlayerList1.append(tempPlayer)
         else:
-            for each in firstPlayerList:
+            for each in PlayerList1:
                 if each.name == tempPlayer.name:
                     each.mvp += int(tempPlayer.mvp)
                     break
 
 
+def FindPlayerAllStarMVPs(html_text):
+    tempPlayer = Player()
+    soup = BeautifulSoup(html_text, 'lxml')
+    summaryOfMVPs = soup.find("div", {"id": "all_all_star_mvp_summary"})
+    tableOfMVPs = summaryOfMVPs.find('table')
+    bodyOfPlayers = tableOfMVPs.find('tbody')
+    for everyPlayer in bodyOfPlayers.find_all('tr'):
+        tempPlayer = IndexASMVPTable(everyPlayer, 1)
+        if tempPlayer.name not in playerNameList:
+            PlayerList2.append(tempPlayer)
+        else:
+            for each in PlayerList2:
+                if each.name == tempPlayer.name:
+                    each.asmvp += int(tempPlayer.asmvp)
+                    break
 
 
 # This is just to more easily parse through some names that Basketball reference appends a '*' to
@@ -110,6 +124,7 @@ def CleanPlayerName(name):
     if name[-1]=='*':
         name = name[:-1]
     return name
+
 
 # Helps with indexing to get to the name and number of all star selections a player would have.
 def IndexAllStarSelectionNameAndNumber(html_text):
@@ -120,6 +135,7 @@ def IndexAllStarSelectionNameAndNumber(html_text):
 
     return playerInQuestion
 
+
 def IndexMVPTable(html_text, countIndex):
     playerInQuestion = Player()
     playerInQuestion.name = html_text.find('a').get_text()
@@ -127,3 +143,22 @@ def IndexMVPTable(html_text, countIndex):
     playerInQuestion.mvp = tempHtml[countIndex].get_text()
 
     return playerInQuestion
+
+
+def IndexASMVPTable(html_text, countIndex):
+    playerInQuestion = Player()
+    playerInQuestion.name = html_text.find('a').get_text()
+    tempHtml = html_text.find_all('td')
+    playerInQuestion.asmvp = tempHtml[countIndex].get_text()
+
+    return playerInQuestion
+
+
+def InitializePlayerList2():
+    global PlayerList2
+    PlayerList2 = PlayerList1
+    playerNameList.clear()
+    for each in PlayerList1:
+        playerNameList.append(each.name)
+    return
+
