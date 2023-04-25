@@ -25,7 +25,7 @@ def PullData():
     for each in PlayerList2:
         indexCounter += 1
         tempStrRunningScore = str(each.runningScore)
-        print(str(indexCounter), '\t', each.name, str(each.roy), tempStrRunningScore)
+        print(str(indexCounter), '\t', each.name, str(each.finalMVP), tempStrRunningScore)
     
 
 def GetList1():
@@ -53,6 +53,9 @@ def GetList2():
 
     html_text = requests.get('https://www.basketball-reference.com/awards/roy.html').text
     FindPlayersROY(html_text)
+
+    html_text = requests.get('https://www.basketball-reference.com/awards/finals_mvp.html').text
+    FindPlayersFinalsMVP(html_text)
 
 
 
@@ -84,6 +87,7 @@ def FindPlayersAllStarSelections(html_text):
         tempPlayer = IndexAllStarSelectionNameAndNumber(everyPlayer)
         if tempPlayer.name not in playerNameList:
             PlayerList1.append(tempPlayer)
+            playerNameList.append(tempPlayer.name)
         else:
             for each in PlayerList1:
                 if each.name == tempPlayer.name:
@@ -99,8 +103,10 @@ def FindPlayersMVPs(html_text):
     bodyOfPlayers = tableOfMVPs.find('tbody')
     for everyPlayer in bodyOfPlayers.find_all('tr'):
         tempPlayer = IndexMVPTable(everyPlayer, 1)
+        #Bill walton gets through here
         if tempPlayer.name not in playerNameList:
             PlayerList1.append(tempPlayer)
+            playerNameList.append(tempPlayer.name)
         else:
             for each in PlayerList1:
                 if each.name == tempPlayer.name:
@@ -164,6 +170,24 @@ def FindROY(html_text):
                     break
 
 
+def FindPlayersFinalsMVP(html_text):
+    tempPlayer = Player()
+    soup = BeautifulSoup(html_text, 'lxml')
+    summaryOfDPOYs = soup.find("div", {"id": "div_finals_mvp_summary"})
+    tableOfDPOYs = summaryOfDPOYs.find('table')
+    bodyOfPlayers = tableOfDPOYs.find('tbody')
+    for everyPlayer in bodyOfPlayers.find_all('tr'):
+        tempPlayer = IndexFinalsMVPTable(everyPlayer, 1)
+        if tempPlayer.name not in playerNameList:
+            PlayerList2.append(tempPlayer)
+        else:
+            for each in PlayerList2:
+                if each.name == tempPlayer.name:
+                    each.finalMVP += int(tempPlayer.finalMVP)
+                    break
+
+
+
 # This is just to more easily parse through some names that Basketball reference appends a '*' to
 def CleanPlayerName(name):
     if name[-1] == '*':
@@ -216,6 +240,15 @@ def IndexROYTables(html_text):
     tempName = temp_html[1].text
     PlayerInQuestion.name = CleanPlayerName(tempName)
     return PlayerInQuestion
+
+
+def IndexFinalsMVPTable(html_text, countIndex):
+    playerInQuestion = Player()
+    playerInQuestion.name = html_text.find('a').get_text()
+    tempHtml = html_text.find_all('td')
+    playerInQuestion.finalMVP = tempHtml[countIndex].get_text()
+
+    return playerInQuestion
 
 
 def InitializePlayerList2():

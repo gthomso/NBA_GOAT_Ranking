@@ -7,21 +7,23 @@ PlayerList3 = list()
 
 def RunningScoreCalc(inputPlayer):
     inputPlayer.runningScore = 4*int(inputPlayer.all_stars) + 5*int(inputPlayer.championships)
-    inputPlayer.runningScore += 15*int(inputPlayer.mvp) + 4*int(inputPlayer.asmvp)
+    inputPlayer.runningScore += 14*int(inputPlayer.mvp) + 4*int(inputPlayer.asmvp)
     inputPlayer.runningScore += 3*int(inputPlayer.dpoy) + 2*int(inputPlayer.roy)
+    inputPlayer.runningScore += 9*int(inputPlayer.finalMVP)
     return inputPlayer
 
 
 def FilterPlayerList(runningScoreMin, maxPlayers, playerList):
     tempPlayerList = list()
+    indexCounter = 0
     for everyPlayer in playerList:
         everyPlayer = RunningScoreCalc(everyPlayer)
         # Arbitrary cut off to be determined later
         if everyPlayer.runningScore >= runningScoreMin:
             tempPlayerList.append(everyPlayer)
-            if len(tempPlayerList) >= maxPlayers:
-                tempPlayerList.sort(key=sortRunningScore, reverse = True)
-                return tempPlayerList
+    tempPlayerList.sort(key=sortRunningScore, reverse = True)
+    if len(tempPlayerList) >= maxPlayers:
+        tempPlayerList = tempPlayerList[:maxPlayers]
     return tempPlayerList
 
 
