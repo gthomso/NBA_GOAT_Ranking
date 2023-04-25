@@ -25,7 +25,7 @@ def PullData():
     for each in PlayerList2:
         indexCounter += 1
         tempStrRunningScore = str(each.runningScore)
-        print(str(indexCounter), '\t', each.name, str(each.asmvp), tempStrRunningScore)
+        print(str(indexCounter), '\t', each.name, str(each.roy), tempStrRunningScore)
     
 
 def GetList1():
@@ -47,6 +47,12 @@ def GetList1():
 def GetList2():
     html_text = requests.get('https://www.basketball-reference.com/awards/all_star_mvp.html').text
     FindPlayerAllStarMVPs(html_text)
+
+    html_text = requests.get('https://www.basketball-reference.com/awards/dpoy.html').text
+    FindPlayersDPOY(html_text)
+
+    html_text = requests.get('https://www.basketball-reference.com/awards/roy.html').text
+    FindPlayersROY(html_text)
 
 
 
@@ -105,9 +111,9 @@ def FindPlayersMVPs(html_text):
 def FindPlayerAllStarMVPs(html_text):
     tempPlayer = Player()
     soup = BeautifulSoup(html_text, 'lxml')
-    summaryOfMVPs = soup.find("div", {"id": "all_all_star_mvp_summary"})
-    tableOfMVPs = summaryOfMVPs.find('table')
-    bodyOfPlayers = tableOfMVPs.find('tbody')
+    summaryOfASMVPs = soup.find("div", {"id": "all_all_star_mvp_summary"})
+    tableOfASMVPs = summaryOfASMVPs.find('table')
+    bodyOfPlayers = tableOfASMVPs.find('tbody')
     for everyPlayer in bodyOfPlayers.find_all('tr'):
         tempPlayer = IndexASMVPTable(everyPlayer, 1)
         if tempPlayer.name not in playerNameList:
@@ -119,10 +125,51 @@ def FindPlayerAllStarMVPs(html_text):
                     break
 
 
+def FindPlayersDPOY(html_text):
+    tempPlayer = Player()
+    soup = BeautifulSoup(html_text, 'lxml')
+    summaryOfDPOYs = soup.find("div", {"id": "all_dpoy_summary"})
+    tableOfDPOYs = summaryOfDPOYs.find('table')
+    bodyOfPlayers = tableOfDPOYs.find('tbody')
+    for everyPlayer in bodyOfPlayers.find_all('tr'):
+        tempPlayer = IndexDPOYTable(everyPlayer, 1)
+        if tempPlayer.name not in playerNameList:
+            PlayerList2.append(tempPlayer)
+        else:
+            for each in PlayerList2:
+                if each.name == tempPlayer.name:
+                    each.dpoy += int(tempPlayer.dpoy)
+                    break
+
+def FindPlayersROY(html_text):
+    soup = BeautifulSoup(html_text, 'lxml')
+    nbaROYSection = soup.find("div", {"id": "all_roy_NBA"})
+    FindROY(nbaROYSection)
+    abaRoySection = soup.find("div", {"id": "all_roy_ABA"})
+    FindROY(abaRoySection)
+
+
+def FindROY(html_text):
+    tempPlayer = Player()
+    tableOfNBAROYs = html_text.find('table')
+    bodyOfPlayers = tableOfNBAROYs.find('tbody')
+    for everyPlayer in bodyOfPlayers.find_all('tr'):
+        tempPlayer = IndexROYTables(everyPlayer)
+        if tempPlayer.name not in playerNameList:
+            PlayerList2.append(tempPlayer)
+        else:
+            for each in PlayerList2:
+                if each.name == tempPlayer.name:
+                    each.roy += 1
+                    break
+
+
 # This is just to more easily parse through some names that Basketball reference appends a '*' to
 def CleanPlayerName(name):
-    if name[-1]=='*':
+    if name[-1] == '*':
         name = name[:-1]
+    if name[-5:] == '(Tie)':
+        name = name[:-6]
     return name
 
 
@@ -152,6 +199,23 @@ def IndexASMVPTable(html_text, countIndex):
     playerInQuestion.asmvp = tempHtml[countIndex].get_text()
 
     return playerInQuestion
+
+
+def IndexDPOYTable(html_text, countIndex):
+    playerInQuestion = Player()
+    playerInQuestion.name = html_text.find('a').get_text()
+    tempHtml = html_text.find_all('td')
+    playerInQuestion.dpoy = tempHtml[countIndex].get_text()
+
+    return playerInQuestion
+
+
+def IndexROYTables(html_text):
+    PlayerInQuestion = Player()
+    temp_html = html_text.find_all('td')
+    tempName = temp_html[1].text
+    PlayerInQuestion.name = CleanPlayerName(tempName)
+    return PlayerInQuestion
 
 
 def InitializePlayerList2():
