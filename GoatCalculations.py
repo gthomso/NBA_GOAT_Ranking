@@ -6,9 +6,11 @@ PlayerList3 = list()
 
 
 def RunningScoreCalc(inputPlayer):
-    inputPlayer.runningScore = 3*int(inputPlayer.all_stars) + 6*int(inputPlayer.championships)
+    inputPlayer.runningScore = 4*int(inputPlayer.all_stars) + 5*int(inputPlayer.championships)
     inputPlayer.runningScore += 15*int(inputPlayer.mvp) + 4*int(inputPlayer.asmvp)
+    inputPlayer.runningScore += 3*int(inputPlayer.dpoy) + 2*int(inputPlayer.roy)
     return inputPlayer
+
 
 def FilterPlayerList(runningScoreMin, maxPlayers, playerList):
     tempPlayerList = list()
