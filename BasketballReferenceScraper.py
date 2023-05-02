@@ -25,7 +25,7 @@ def PullData():
     for each in PlayerList2:
         indexCounter += 1
         tempStrRunningScore = str(each.runningScore)
-        print(str(indexCounter), '\t', each.name, str(each.finalMVP), tempStrRunningScore)
+        print(str(indexCounter), '\t', each.name, str(each.allNBA), tempStrRunningScore)
     
 
 def GetList1():
@@ -56,6 +56,10 @@ def GetList2():
 
     html_text = requests.get('https://www.basketball-reference.com/awards/finals_mvp.html').text
     FindPlayersFinalsMVP(html_text)
+
+    html_text = requests.get('https://www.basketball-reference.com/awards/all_league.html').text
+    FindPlayersAllNBA(html_text)
+
 
 
 
@@ -187,6 +191,25 @@ def FindPlayersFinalsMVP(html_text):
                     break
 
 
+def FindPlayersAllNBA(html_text):
+    tempPlayer = Player()
+    soup = BeautifulSoup(html_text, 'lxml')
+    tableOfAllLeague = soup.find('table', {"id" : "awards_all_league"})
+    bodyOfPlayers = tableOfAllLeague.find('tbody')
+    # Need to get rid of the 'tr' sections with thead class
+    for selectionRow in bodyOfPlayers.find_all('tr', {"class" : ""}):
+        listOfTableRow = selectionRow.find_all('td')
+        teamList = [listOfTableRow[3], listOfTableRow[4], listOfTableRow[5], listOfTableRow[6], listOfTableRow[7]]
+        for eachPlayer in teamList:
+            tempPlayer = IndexAllLeagueTable(eachPlayer)
+            if tempPlayer.name not in playerNameList:
+                PlayerList2.append(tempPlayer)
+            else:
+                for each in PlayerList2:
+                    if each.name == tempPlayer.name:
+                        each.allNBA += 1
+                        break
+    
 
 # This is just to more easily parse through some names that Basketball reference appends a '*' to
 def CleanPlayerName(name):
@@ -248,6 +271,13 @@ def IndexFinalsMVPTable(html_text, countIndex):
     tempHtml = html_text.find_all('td')
     playerInQuestion.finalMVP = tempHtml[countIndex].get_text()
 
+    return playerInQuestion
+
+
+def IndexAllLeagueTable(html_text):
+    playerInQuestion = Player ()
+    playerInQuestion.name = html_text.find('a').get_text()
+    
     return playerInQuestion
 
 
