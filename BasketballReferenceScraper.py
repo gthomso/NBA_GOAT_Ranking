@@ -25,7 +25,7 @@ def PullData():
     for each in PlayerList2:
         indexCounter += 1
         tempStrRunningScore = str(each.runningScore)
-        print(str(indexCounter), '\t', each.name, str(each.allNBA), tempStrRunningScore)
+        print(indexCounter, each.name, str(each.allNBA), tempStrRunningScore)
     
 
 def GetList1():
@@ -59,7 +59,6 @@ def GetList2():
 
     html_text = requests.get('https://www.basketball-reference.com/awards/all_league.html').text
     FindPlayersAllNBA(html_text)
-
 
 
 
@@ -190,7 +189,6 @@ def FindPlayersFinalsMVP(html_text):
                     each.finalMVP += int(tempPlayer.finalMVP)
                     break
 
-
 def FindPlayersAllNBA(html_text):
     tempPlayer = Player()
     soup = BeautifulSoup(html_text, 'lxml')
@@ -209,7 +207,7 @@ def FindPlayersAllNBA(html_text):
                     if each.name == tempPlayer.name:
                         each.allNBA += 1
                         break
-    
+
 
 # This is just to more easily parse through some names that Basketball reference appends a '*' to
 def CleanPlayerName(name):
@@ -288,4 +286,3 @@ def InitializePlayerList2():
     for each in PlayerList1:
         playerNameList.append(each.name)
     return
-
