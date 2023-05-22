@@ -7,9 +7,9 @@ PlayerList3 = list()
 
 def RunningScoreCalc(inputPlayer):
     inputPlayer.runningScore = 4*int(inputPlayer.all_stars) + 5*int(inputPlayer.championships)
-    inputPlayer.runningScore += 14*int(inputPlayer.mvp) + 4*int(inputPlayer.asmvp)
+    inputPlayer.runningScore += 14*int(inputPlayer.mvp) + 3*int(inputPlayer.asmvp)
     inputPlayer.runningScore += 3*int(inputPlayer.dpoy) + 2*int(inputPlayer.roy)
-    inputPlayer.runningScore += 9*int(inputPlayer.finalMVP)
+    inputPlayer.runningScore += 9*int(inputPlayer.finalMVP) + 4*int(inputPlayer.allNBA)
     return inputPlayer
 
 
