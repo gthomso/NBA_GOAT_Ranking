@@ -14,7 +14,7 @@ playerNameList = list()
 
 
 def PullData():
-    global PlayerList1, PlayerList2
+    global PlayerList1, PlayerList2, PlayerList3
     indexCounter = 0
     GetList1()
     PlayerList1 = FilterPlayerList(9, 300, PlayerList1)
@@ -22,10 +22,15 @@ def PullData():
     InitializePlayerList2()
     GetList2()
     PlayerList2 = FilterPlayerList(18, 150, PlayerList2)
-    for each in PlayerList2:
+
+    InitializePlayerList3()
+    GetList3()
+    PlayerList3 = FilterPlayerList(36, 100, PlayerList3)
+    
+    for each in PlayerList3:
         indexCounter += 1
         tempStrRunningScore = str(each.runningScore)
-        print(indexCounter, each.name, str(each.allNBA), tempStrRunningScore)
+        print(indexCounter, each.name, str(each.statTitles), tempStrRunningScore)
     
 
 def GetList1():
@@ -60,7 +65,29 @@ def GetList2():
     html_text = requests.get('https://www.basketball-reference.com/awards/all_league.html').text
     FindPlayersAllNBA(html_text)
 
+    html_text = requests.get('https://www.basketball-reference.com/awards/all_defense.html').text
+    FindPlayersAllDefense(html_text)
 
+
+def GetList3():
+    # Need to go through every name to find stat leaders, cPER and Total championships
+    # should add stats up here to the players in player list 3.
+    print("[", end='')
+    for eachPlayer in PlayerList3:
+        tempPlayer = Player()
+        tempName = eachPlayer.name
+        tempPlayerFullName = ParseName(tempName)
+        builtURL = BuildPlayerURL(tempPlayerFullName)
+        # This calls the Calling of the specific player data.
+        tempPlayer = EnsureUrlIsCorrect(builtURL, tempName)
+
+        eachPlayer.statTitles = tempPlayer.statTitles
+        
+        print(".",end='')
+
+        time.sleep(2.5)
+        
+        
 
 def FindPlayersWithAtLeast3Chips(html_text):
     tempPlayerName = ''
@@ -189,6 +216,7 @@ def FindPlayersFinalsMVP(html_text):
                     each.finalMVP += int(tempPlayer.finalMVP)
                     break
 
+
 def FindPlayersAllNBA(html_text):
     tempPlayer = Player()
     soup = BeautifulSoup(html_text, 'lxml')
@@ -199,7 +227,7 @@ def FindPlayersAllNBA(html_text):
         listOfTableRow = selectionRow.find_all('td')
         teamList = [listOfTableRow[3], listOfTableRow[4], listOfTableRow[5], listOfTableRow[6], listOfTableRow[7]]
         for eachPlayer in teamList:
-            tempPlayer = IndexAllLeagueTable(eachPlayer)
+            tempPlayer = IndexAllLeagueAwardsTables(eachPlayer)
             if tempPlayer.name not in playerNameList:
                 PlayerList2.append(tempPlayer)
             else:
@@ -208,6 +236,53 @@ def FindPlayersAllNBA(html_text):
                         each.allNBA += 1
                         break
 
+
+def FindPlayersAllDefense(html_text):
+    tempPlayer = Player()
+    soup = BeautifulSoup(html_text, 'lxml')
+    tableOfAllLeague = soup.find('table', {"id" : "awards_all_defense"})
+    bodyOfPlayers = tableOfAllLeague.find('tbody')
+    # Need to get rid of the 'tr' sections with thead class
+    for selectionRow in bodyOfPlayers.find_all('tr', {"class" : ""}):
+        listOfTableRow = selectionRow.find_all('td')
+        teamList = [listOfTableRow[3], listOfTableRow[4], listOfTableRow[5], listOfTableRow[6], listOfTableRow[7]]
+        for eachPlayer in teamList:
+            tempPlayer = IndexAllLeagueAwardsTables(eachPlayer)
+            if tempPlayer.name not in playerNameList:
+                PlayerList2.append(tempPlayer)
+            else:
+                for each in PlayerList2:
+                    if each.name == tempPlayer.name:
+                        each.allDef += 1
+                        break
+
+
+# This serves as a way to find all the data on the players specific page.
+def FindPlayerSpecificData(html_text, tempName):
+    tempPlayer = Player()
+    soup = BeautifulSoup(html_text, 'lxml')
+    allPlayerAccomplishments = soup.find('ul', {"id" : "bling"})
+    tempPlayer.statTitles = FindPlayerStatTitles(allPlayerAccomplishments)
+    return tempPlayer
+
+
+
+def FindPlayerStatTitles(html_text):
+    allStatTitles = 0
+    for eachStatTitle in html_text.find_all('li', {"class" : "poptip"}):
+        howManyTitles = eachStatTitle.find('a').get_text()
+        allStatTitles += FindHowManyStatTitles(howManyTitles)
+    return allStatTitles
+
+# Need to figure out how many titles are there in the raw text
+def FindHowManyStatTitles(howManyStatTitles):
+    tempAmount = 0
+    tempString = howManyStatTitles.split(" ")
+    if tempString[0][-1] == 'x':
+        tempAmount = int(tempString[0][:-1])
+    else:
+        tempAmount = 1
+    return tempAmount
 
 # This is just to more easily parse through some names that Basketball reference appends a '*' to
 def CleanPlayerName(name):
@@ -272,11 +347,14 @@ def IndexFinalsMVPTable(html_text, countIndex):
     return playerInQuestion
 
 
-def IndexAllLeagueTable(html_text):
+def IndexAllLeagueAwardsTables(html_text):
     playerInQuestion = Player ()
-    playerInQuestion.name = html_text.find('a').get_text()
+    if html_text.get_text():
+        playerInQuestion.name = html_text.find('a').get_text()
     
     return playerInQuestion
+
+
 
 
 def InitializePlayerList2():
@@ -286,3 +364,54 @@ def InitializePlayerList2():
     for each in PlayerList1:
         playerNameList.append(each.name)
     return
+
+
+def InitializePlayerList3():
+    global PlayerList3
+    PlayerList3 = PlayerList2
+    playerNameList.clear()
+    for each in PlayerList2:
+        playerNameList.append(each.name)
+    return
+
+def ParseName(name):
+    # For players names who have an ' in it eg. Shaquille O'Niel
+    name = ''.join(name.split("'"))
+    # For players from foriegn lands with unrecognized ascii
+    name = 'c'.join(name.split("ć"))
+    name = 'o'.join(name.split("ó"))
+    # For players with abreviated names
+    name = ''.join(name.split("."))
+    
+    # need to separate the Jabar part so we initialize the first part of the split
+    name = (name.split("-"))[0]
+    fullName = name.split(" ")
+    return fullName
+
+
+# uses a list first, last to build the url to look up specific player.
+def BuildPlayerURL(name):
+    tempURL = 'https://www.basketball-reference.com/players/'
+    tempURL += name[-1][0].lower() + '/'
+    if len(name[-1]) > 5:
+        tempURL += (name[-1][:5] + name[0][:2]).lower() + '01.html'
+    else:
+        tempURL += (name[-1] + name[0][:2]).lower() + '01.html'
+    return tempURL
+
+# Ensuring the name matches the name provided
+def EnsureUrlIsCorrect(builtURL, tempName):
+    tempPlayer = Player()
+    html_text = requests.get(builtURL).text
+    soup = BeautifulSoup(html_text, 'lxml')
+    pageTitle = soup.find("div", {"id" : "meta"})
+    pageName = pageTitle.find("span").get_text()
+    if pageName == tempName:
+        tempPlayer = FindPlayerSpecificData(html_text, tempName)
+    else:
+        numberOfNamesPage = int(builtURL[-6])
+        # increments the digit by 1
+        builtURL = str(numberOfNamesPage+1).join(builtURL.split(str(numberOfNamesPage)))
+        EnsureUrlIsCorrect(builtURL, tempName)
+
+    return tempPlayer
