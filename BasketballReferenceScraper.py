@@ -86,6 +86,7 @@ def GetList3():
         print(".",end='')
 
         time.sleep(2.5)
+    print("]")
         
         
 
