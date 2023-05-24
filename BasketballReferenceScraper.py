@@ -82,6 +82,7 @@ def GetList3():
         tempPlayer = EnsureUrlIsCorrect(builtURL, tempName)
 
         eachPlayer.statTitles = tempPlayer.statTitles
+        eachPlayer.careerPER = tempPlayer.careerPER
         
         print(".",end='')
 
