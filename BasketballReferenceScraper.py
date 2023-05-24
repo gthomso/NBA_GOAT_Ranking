@@ -30,7 +30,7 @@ def PullData():
     for each in PlayerList3:
         indexCounter += 1
         tempStrRunningScore = str(each.runningScore)
-        print(indexCounter, each.name, str(each.statTitles), tempStrRunningScore)
+        print(indexCounter, each.name, str(each.careerPER), tempStrRunningScore)
     
 
 def GetList1():
@@ -82,14 +82,10 @@ def GetList3():
         tempPlayer = EnsureUrlIsCorrect(builtURL, tempName)
 
         eachPlayer.statTitles = tempPlayer.statTitles
-<<<<<<< HEAD
-=======
-        eachPlayer.careerPER = tempPlayer.careerPER
->>>>>>> AllDefenseStatTitles
-        
+        eachPlayer.careerPER = tempPlayer.careerPER        
         print(".",end='')
 
-        time.sleep(2.5)
+        time.sleep(2.4)
     print("]")
         
         
@@ -268,6 +264,8 @@ def FindPlayerSpecificData(html_text, tempName):
     soup = BeautifulSoup(html_text, 'lxml')
     allPlayerAccomplishments = soup.find('ul', {"id" : "bling"})
     tempPlayer.statTitles = FindPlayerStatTitles(allPlayerAccomplishments)
+    careerPERHtml = soup.find('div', {"class" : "p3"})
+    tempPlayer.careerPER = FindPlayerCareerPer(careerPERHtml)
     return tempPlayer
 
 
@@ -288,6 +286,12 @@ def FindHowManyStatTitles(howManyStatTitles):
     else:
         tempAmount = 1
     return tempAmount
+
+
+def FindPlayerCareerPer(html_text):
+    eachEntry = html_text.find_all('p')
+    perStatForPlayer = eachEntry[1].get_text()
+    return perStatForPlayer
 
 # This is just to more easily parse through some names that Basketball reference appends a '*' to
 def CleanPlayerName(name):
