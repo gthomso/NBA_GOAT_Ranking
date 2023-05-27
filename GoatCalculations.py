@@ -10,7 +10,7 @@ def RunningScoreCalc(inputPlayer):
     inputPlayer.runningScore += 14*int(inputPlayer.mvp) + 3*int(inputPlayer.asmvp)
     inputPlayer.runningScore += 2*int(inputPlayer.dpoy) + 1*int(inputPlayer.roy)
     inputPlayer.runningScore += 8*int(inputPlayer.finalMVP) + 4*int(inputPlayer.allNBA)
-    inputPlayer.runningScore += 3*int(inputPlayer.allDef) + 1*int(inputPlayer.statTitles)
+    inputPlayer.runningScore += 4*int(inputPlayer.allDef) + 1*int(inputPlayer.statTitles)
     inputPlayer.runningScore += round(9*float(inputPlayer.careerPER),2)
     return inputPlayer
 

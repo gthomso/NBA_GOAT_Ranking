@@ -421,6 +421,6 @@ def EnsureUrlIsCorrect(builtURL, tempName):
         numberOfNamesPage = int(builtURL[-6])
         # increments the digit by 1
         builtURL = str(numberOfNamesPage+1).join(builtURL.split(str(numberOfNamesPage)))
-        EnsureUrlIsCorrect(builtURL, tempName)
+        tempPlayer = EnsureUrlIsCorrect(builtURL, tempName)
 
     return tempPlayer
