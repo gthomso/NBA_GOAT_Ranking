@@ -30,7 +30,7 @@ def PullData():
     for each in PlayerList3:
         indexCounter += 1
         tempStrRunningScore = str(each.runningScore)
-        print(indexCounter, each.name, str(each.careerPER), tempStrRunningScore)
+        print(indexCounter, each.name, str(each.championships), tempStrRunningScore)
     
 
 def GetList1():
@@ -82,10 +82,11 @@ def GetList3():
         tempPlayer = EnsureUrlIsCorrect(builtURL, tempName)
 
         eachPlayer.statTitles = tempPlayer.statTitles
-        eachPlayer.careerPER = tempPlayer.careerPER        
+        eachPlayer.careerPER = tempPlayer.careerPER  
+        eachPlayer.championships = tempPlayer.championships      
         print(".",end='')
 
-        time.sleep(2.4)
+        time.sleep(2.3)
     print("]")
         
         
@@ -264,6 +265,7 @@ def FindPlayerSpecificData(html_text, tempName):
     soup = BeautifulSoup(html_text, 'lxml')
     allPlayerAccomplishments = soup.find('ul', {"id" : "bling"})
     tempPlayer.statTitles = FindPlayerStatTitles(allPlayerAccomplishments)
+    tempPlayer.championships = FindTotalChips(allPlayerAccomplishments)
     careerPERHtml = soup.find('div', {"class" : "p3"})
     tempPlayer.careerPER = FindPlayerCareerPer(careerPERHtml)
     return tempPlayer
@@ -274,11 +276,11 @@ def FindPlayerStatTitles(html_text):
     allStatTitles = 0
     for eachStatTitle in html_text.find_all('li', {"class" : "poptip"}):
         howManyTitles = eachStatTitle.find('a').get_text()
-        allStatTitles += FindHowManyStatTitles(howManyTitles)
+        allStatTitles += FindHowManyTitles(howManyTitles)
     return allStatTitles
 
 # Need to figure out how many titles are there in the raw text
-def FindHowManyStatTitles(howManyStatTitles):
+def FindHowManyTitles(howManyStatTitles):
     tempAmount = 0
     tempString = howManyStatTitles.split(" ")
     if tempString[0][-1] == 'x':
@@ -292,6 +294,16 @@ def FindPlayerCareerPer(html_text):
     eachEntry = html_text.find_all('p')
     perStatForPlayer = eachEntry[1].get_text()
     return perStatForPlayer
+
+
+# the find how many stat titles may need to be refactored, just for naming conventions
+def FindTotalChips(html_text):
+    tempAmount = 0
+    for eachChampionship in html_text.find_all('li'):
+        if eachChampionship.get_text()[-8:] == "BA Champ":
+            tempAmount += FindHowManyTitles(eachChampionship.get_text())
+    return tempAmount
+
 
 # This is just to more easily parse through some names that Basketball reference appends a '*' to
 def CleanPlayerName(name):
