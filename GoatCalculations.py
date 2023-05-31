@@ -1,5 +1,7 @@
 from Player import *
+import statistics
 
+# Trying to move the Player Lists into System
 PlayerList1 = list()
 PlayerList2 = list()
 PlayerList3 = list()
@@ -11,7 +13,7 @@ def RunningScoreCalc(inputPlayer):
     inputPlayer.runningScore += 2*int(inputPlayer.dpoy) + 1*int(inputPlayer.roy)
     inputPlayer.runningScore += 8*int(inputPlayer.finalMVP) + 4*int(inputPlayer.allNBA)
     inputPlayer.runningScore += 4*int(inputPlayer.allDef) + 1*int(inputPlayer.statTitles)
-    inputPlayer.runningScore += round(8*float(inputPlayer.careerPER),2)
+    inputPlayer.runningScore += round(7*float(inputPlayer.careerPER),2)
     return inputPlayer
 
 
@@ -31,3 +33,10 @@ def FilterPlayerList(runningScoreMin, maxPlayers, playerList):
 
 def sortRunningScore(player):
     return player.runningScore
+
+
+# Going to save all averages as a Player setting to access later
+def FindAverageForAllCatagories(inputPlayerList):
+    avgPlayer = Player()
+
+    return

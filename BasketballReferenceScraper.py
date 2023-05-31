@@ -14,6 +14,7 @@ playerNameList = list()
 
 
 def PullData():
+
     global PlayerList1, PlayerList2, PlayerList3
     indexCounter = 0
     GetList1()
@@ -26,11 +27,11 @@ def PullData():
     InitializePlayerList3()
     GetList3()
     PlayerList3 = FilterPlayerList(36, 100, PlayerList3)
+
+    # Create function here to create a txt file for player storage.
+    CreateTxtFileForFinalPlayerList()
     
-    for each in PlayerList3:
-        indexCounter += 1
-        tempStrRunningScore = str(each.runningScore)
-        print(indexCounter, each.name, str(each.championships), tempStrRunningScore)
+    return PlayerList3
     
 
 def GetList1():
@@ -436,3 +437,17 @@ def EnsureUrlIsCorrect(builtURL, tempName):
         tempPlayer = EnsureUrlIsCorrect(builtURL, tempName)
 
     return tempPlayer
+
+
+def CreateTxtFileForFinalPlayerList():
+    top100File = open("PlayerInfo.txt", "w")
+    # where the actual creation of text file goes.
+    for eachPlayer in PlayerList3:
+        # Creating possibilities for problems with forign lettering when transcribing it to text file
+        tempName = eachPlayer.name
+        tempName = 'c'.join(tempName.split("ć"))
+        tempName = 'o'.join(tempName.split("ó"))
+        print(tempName, eachPlayer.all_stars, eachPlayer.championships, eachPlayer.mvp, eachPlayer.dpoy, eachPlayer.roy, eachPlayer.asmvp, eachPlayer.finalMVP, eachPlayer.allNBA, eachPlayer.allDef, eachPlayer.allDef, eachPlayer.statTitles, eachPlayer.careerPER, sep = ",", file = top100File)
+    # print("Hey", file = top100File)
+    top100File.close()
+    return
