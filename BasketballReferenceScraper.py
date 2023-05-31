@@ -447,7 +447,7 @@ def CreateTxtFileForFinalPlayerList():
         tempName = eachPlayer.name
         tempName = 'c'.join(tempName.split("ć"))
         tempName = 'o'.join(tempName.split("ó"))
-        print(tempName, eachPlayer.all_stars, eachPlayer.championships, eachPlayer.mvp, eachPlayer.dpoy, eachPlayer.roy, eachPlayer.asmvp, eachPlayer.finalMVP, eachPlayer.allNBA, eachPlayer.allDef, eachPlayer.allDef, eachPlayer.statTitles, eachPlayer.careerPER, sep = ",", file = top100File)
+        print(tempName, eachPlayer.all_stars, eachPlayer.championships, eachPlayer.mvp, eachPlayer.dpoy, eachPlayer.roy, eachPlayer.asmvp, eachPlayer.finalMVP, eachPlayer.allNBA, eachPlayer.allDef, eachPlayer.statTitles, eachPlayer.careerPER, sep = ",", file = top100File)
     # print("Hey", file = top100File)
     top100File.close()
     return
