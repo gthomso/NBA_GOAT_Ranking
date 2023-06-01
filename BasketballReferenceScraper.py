@@ -5,33 +5,31 @@ import time
 from GoatCalculations import *
 
 # The player lists help iteratively build the player base, and narrows it down over each iteration.
-#playerList1 = list()
-#playerList2 = list()
-#playerList3 = list()
 # the Player Name List is just a tool to insure that we don't have repeats, and is just a quicker way to
 # look up the information.
 playerNameList = list()
 
-
+# Main function used when collecting information from basketball reference
 def PullData():
 
     global PlayerList1, PlayerList2, PlayerList3
     indexCounter = 0
+    # Grabs the all_star nominations, mvps and chips if they have more than 3.
     GetList1()
+    #FilterPlayerList narrows down the amount Players that are eligible for promotion to next round
     PlayerList1 = FilterPlayerList(9, 300, PlayerList1)
-
+    # Grabs everything but careerPER, Chips, and StatTitles
     InitializePlayerList2()
     GetList2()
     PlayerList2 = FilterPlayerList(18, 150, PlayerList2)
-
+    # Final iteration, everything is grabbed here.
     InitializePlayerList3()
     GetList3()
     PlayerList3 = FilterPlayerList(36, 100, PlayerList3)
 
     # Create function here to create a txt file for player storage.
     CreateTxtFileForFinalPlayerList()
-    
-    return PlayerList3
+    return
     
 
 def GetList1():
@@ -51,6 +49,8 @@ def GetList1():
 # Refines the existing list and tries to get it under 150 players
 # Takes into account all catagories except for cPER and total Championships
 def GetList2():
+    # Each html request just gets it's appropriate stat. Unfortunately because of the way basketball
+    # reference is set up it is difficult to refactor this into neater code.
     html_text = requests.get('https://www.basketball-reference.com/awards/all_star_mvp.html').text
     FindPlayerAllStarMVPs(html_text)
 
@@ -77,21 +77,24 @@ def GetList3():
     for eachPlayer in PlayerList3:
         tempPlayer = Player()
         tempName = eachPlayer.name
+        # Ensures that the name is readable by the code
         tempPlayerFullName = ParseName(tempName)
+        # Builds the URL it needs to request
         builtURL = BuildPlayerURL(tempPlayerFullName)
         # This calls the Calling of the specific player data.
         tempPlayer = EnsureUrlIsCorrect(builtURL, tempName)
-
         eachPlayer.statTitles = tempPlayer.statTitles
         eachPlayer.careerPER = tempPlayer.careerPER  
-        eachPlayer.championships = tempPlayer.championships      
+        eachPlayer.championships = tempPlayer.championships 
+        # here to show that the program is still running while waiting for everything to load.     
         print(".",end='')
-
+        # This is to get around the automated defense of webscrapers that basketball reference has.
+        # Also why it takes so long to compute the pulling of the data.
         time.sleep(2.3)
     print("]")
         
         
-
+# Table that is easily accessed that allows us to see all players with more than 3 championships.
 def FindPlayersWithAtLeast3Chips(html_text):
     tempPlayerName = ''
     soup = BeautifulSoup(html_text, 'lxml')
@@ -110,7 +113,9 @@ def FindPlayersWithAtLeast3Chips(html_text):
             tempPlayer.championships = everyPlayer.get_text()
             PlayerList1.append(tempPlayer)
     
-
+# All of the Find functions function similarly to the FindPlayersWithAtLeast3Chips function.
+# Will note if something is dramatically different. The only differences are ways to navigate the
+# specific pages.
 def FindPlayersAllStarSelections(html_text):
     tempPlayer = Player()
     soup = BeautifulSoup(html_text, 'lxml')
@@ -136,7 +141,6 @@ def FindPlayersMVPs(html_text):
     bodyOfPlayers = tableOfMVPs.find('tbody')
     for everyPlayer in bodyOfPlayers.find_all('tr'):
         tempPlayer = IndexMVPTable(everyPlayer, 1)
-        #Bill walton gets through here
         if tempPlayer.name not in playerNameList:
             PlayerList1.append(tempPlayer)
             playerNameList.append(tempPlayer.name)
@@ -180,6 +184,8 @@ def FindPlayersDPOY(html_text):
                     each.dpoy += int(tempPlayer.dpoy)
                     break
 
+# Here is the first example of the ABA included in the Finding section. That is why we use the
+# FindRoy function twice.
 def FindPlayersROY(html_text):
     soup = BeautifulSoup(html_text, 'lxml')
     nbaROYSection = soup.find("div", {"id": "all_roy_NBA"})
@@ -187,7 +193,7 @@ def FindPlayersROY(html_text):
     abaRoySection = soup.find("div", {"id": "all_roy_ABA"})
     FindROY(abaRoySection)
 
-
+# Just increments the roy if present in both the ABA and the NBA
 def FindROY(html_text):
     tempPlayer = Player()
     tableOfNBAROYs = html_text.find('table')
@@ -239,7 +245,8 @@ def FindPlayersAllNBA(html_text):
                         each.allNBA += 1
                         break
 
-
+# Here there is the first example where some hard coded navigation is utilized to allow for precise
+# navigation of the called html.
 def FindPlayersAllDefense(html_text):
     tempPlayer = Player()
     soup = BeautifulSoup(html_text, 'lxml')
@@ -271,8 +278,8 @@ def FindPlayerSpecificData(html_text, tempName):
     tempPlayer.careerPER = FindPlayerCareerPer(careerPERHtml)
     return tempPlayer
 
-
-
+# Called from the FindPlayerSpecificData function. This is just the navigational tool for
+# the statTitle stat.
 def FindPlayerStatTitles(html_text):
     allStatTitles = 0
     for eachStatTitle in html_text.find_all('li', {"class" : "poptip"}):
@@ -290,7 +297,7 @@ def FindHowManyTitles(howManyStatTitles):
         tempAmount = 1
     return tempAmount
 
-
+# Called from the find SpecificPlayerData function, simply finds the PER
 def FindPlayerCareerPer(html_text):
     eachEntry = html_text.find_all('p')
     perStatForPlayer = eachEntry[1].get_text()
@@ -324,7 +331,8 @@ def IndexAllStarSelectionNameAndNumber(html_text):
 
     return playerInQuestion
 
-
+# All Indexing functions are designed to both find the name on the table and to associate it with
+# the desired stat.
 def IndexMVPTable(html_text, countIndex):
     playerInQuestion = Player()
     playerInQuestion.name = html_text.find('a').get_text()
@@ -376,9 +384,7 @@ def IndexAllLeagueAwardsTables(html_text):
     
     return playerInQuestion
 
-
-
-
+# The initializeing functions just create the new Player list and update the playernamelist.
 def InitializePlayerList2():
     global PlayerList2
     PlayerList2 = PlayerList1
@@ -448,6 +454,5 @@ def CreateTxtFileForFinalPlayerList():
         tempName = 'c'.join(tempName.split("ć"))
         tempName = 'o'.join(tempName.split("ó"))
         print(tempName, eachPlayer.all_stars, eachPlayer.championships, eachPlayer.mvp, eachPlayer.dpoy, eachPlayer.roy, eachPlayer.asmvp, eachPlayer.finalMVP, eachPlayer.allNBA, eachPlayer.allDef, eachPlayer.statTitles, eachPlayer.careerPER, sep = ",", file = top100File)
-    # print("Hey", file = top100File)
     top100File.close()
     return
