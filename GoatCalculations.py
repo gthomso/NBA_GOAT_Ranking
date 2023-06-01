@@ -1,5 +1,6 @@
 from Player import *
 import statistics
+import math
 
 # Trying to move the Player Lists into System
 PlayerList1 = list()
@@ -7,13 +8,23 @@ PlayerList2 = list()
 PlayerList3 = list()
 
 
+def RunFinalCalculations():
+    # These are just placeholder players to hold the numbers for each stat.
+    mathPlayerSet = ReadTextFile()
+    avgPlayer = Player()
+    stdDevPlayer = Player()
+    avgPlayer = FindAverageForAllCatagories(mathPlayerSet)
+    stdDevPlayer = FindStdDevForPlayersCatagories(mathPlayerSet, avgPlayer)
+
+
+
 def RunningScoreCalc(inputPlayer):
-    inputPlayer.runningScore = 4*int(inputPlayer.all_stars) + 5*int(inputPlayer.championships)
-    inputPlayer.runningScore += 14*int(inputPlayer.mvp) + 3*int(inputPlayer.asmvp)
-    inputPlayer.runningScore += 2*int(inputPlayer.dpoy) + 1*int(inputPlayer.roy)
-    inputPlayer.runningScore += 8*int(inputPlayer.finalMVP) + 4*int(inputPlayer.allNBA)
-    inputPlayer.runningScore += 4*int(inputPlayer.allDef) + 1*int(inputPlayer.statTitles)
-    inputPlayer.runningScore += round(7*float(inputPlayer.careerPER),2)
+    inputPlayer.runningScore = 3.5*int(inputPlayer.all_stars) + 6*int(inputPlayer.championships)
+    inputPlayer.runningScore += 13.5*int(inputPlayer.mvp) + 2.5*int(inputPlayer.asmvp)
+    inputPlayer.runningScore += 1.5*int(inputPlayer.dpoy) + .5*int(inputPlayer.roy)
+    inputPlayer.runningScore += 7.5*int(inputPlayer.finalMVP) + 3.5*int(inputPlayer.allNBA)
+    inputPlayer.runningScore += 3.5*int(inputPlayer.allDef) + .5*int(inputPlayer.statTitles)
+    inputPlayer.runningScore += round(6*float(inputPlayer.careerPER),2)
     return inputPlayer
 
 
@@ -36,8 +47,7 @@ def sortRunningScore(player):
 
 
 # Going to save all averages as a Player setting to access later
-def FindAverageForAllCatagories():
-    mathPlayerList = ReadTextFile()
+def FindAverageForAllCatagories(mathPlayerList):
     avgPlayer = Player()
     members = [attr for attr in dir(avgPlayer) if not callable(getattr(avgPlayer, attr)) and not attr.startswith("__")]
     for everyMember in members:
@@ -54,6 +64,30 @@ def FindAverageForCatagory(mathPlayerList, statBeingFound):
     for everyPlayer in mathPlayerList:
         runningSum += float(everyPlayer.__getattribute__(statBeingFound))
     return round(runningSum/len(mathPlayerList), 2)
+
+
+def FindStdDevForPlayersCatagories(mathPlayerList, avgPlayer):
+    stdDevPlayer = Player()
+    members = [attr for attr in dir(stdDevPlayer) if not callable(getattr(stdDevPlayer, attr)) and not attr.startswith("__")]
+    for everyMember in members:
+        if everyMember != "name":
+            setattr(stdDevPlayer, everyMember, FindSingularStdDevStat(mathPlayerList, avgPlayer, everyMember))
+    return stdDevPlayer
+
+
+def FindSingularStdDevStat(mathPlayerList, avgPlayer, statBeingFound):
+    runningSum = 0
+    for everyPlayer in mathPlayerList:
+        tempDif = float(float(everyPlayer.__getattribute__(statBeingFound)) - float(avgPlayer.__getattribute__(statBeingFound)))
+        runningSum += math.pow(tempDif, 2)
+    avgDev = runningSum/(len(mathPlayerList) - 1)
+    return round(math.sqrt(avgDev), 2)
+
+
+#Final calculation of the greatness Stat
+def CalculateGreatnessStat():
+
+    return
 
 
 def ReadTextFile():
@@ -79,4 +113,4 @@ def ReadTextFile():
     return mathPlayerList
 
 #used for testing when the file has been built.
-FindAverageForAllCatagories()
+RunFinalCalculations()

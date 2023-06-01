@@ -9,4 +9,4 @@ def Run():
     FinalPlayerList = PullData()
     # Once Data is pulled we should go to Goat calculations to normalize the data to create
     # standardized values for each accolade
-    FindAverageForAllCatagories(FinalPlayerList)
+    RunFinalCalculations()
