@@ -163,7 +163,3 @@ def PrintList(PlayerList):
     for everyPlayer in PlayerList:
         print(index, everyPlayer.name, "\tGreatness Score: ", everyPlayer.finalGreatnessScore)
         index += 1
-
-
-#used for testing when the file has been built.
-RunFinalCalculations()
