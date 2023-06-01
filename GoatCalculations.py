@@ -15,6 +15,12 @@ def RunFinalCalculations():
     stdDevPlayer = Player()
     avgPlayer = FindAverageForAllCatagories(mathPlayerSet)
     stdDevPlayer = FindStdDevForPlayersCatagories(mathPlayerSet, avgPlayer)
+    # Stores the final greatness Stat into the MathPlayerSet List
+    CalculateGreatnessStat(mathPlayerSet, avgPlayer, stdDevPlayer)
+    # Need to just sort by greatness Stat than print it out
+    finalPlayerSet = SortByGreatness(mathPlayerSet)
+    PrintList(finalPlayerSet)
+    
 
 
 
@@ -85,9 +91,39 @@ def FindSingularStdDevStat(mathPlayerList, avgPlayer, statBeingFound):
 
 
 #Final calculation of the greatness Stat
-def CalculateGreatnessStat():
+def CalculateGreatnessStat(mathPlayerList, avgPlayer, stdDevPlayer):
+    members = [attr for attr in dir(stdDevPlayer) if not callable(getattr(stdDevPlayer, attr)) and not attr.startswith("__")]
+    for everyPlayer in mathPlayerList:
+        tempPlayer = Player()
+        for eachMember in members:
+            stdDevAwayForStat = 0
+            if eachMember != "name":
+                stdDevAwayForStat = CalculateIndividualGreatnessStat(everyPlayer, eachMember, avgPlayer, stdDevPlayer)
+            setattr(tempPlayer, eachMember, stdDevAwayForStat)
+        everyPlayer.finalGreatnessScore = round(CalculateAvgOfDeviationsForPlayer(tempPlayer), 2) + 5
+        
 
-    return
+
+# This just calculates the amount of standard deviations away from each statistic the player is.
+def CalculateIndividualGreatnessStat(PlayerInQuestion, statInQuestion, avgPlayer, stdDevPlayer):
+    tempDevs = 0
+    tempDiff = float(PlayerInQuestion.__getattribute__(statInQuestion)) - float(avgPlayer.__getattribute__(statInQuestion))
+    if tempDiff != 0:
+        tempDevs = (tempDiff*float(PlayerInQuestion.__dict__(statInQuestion)))/float(stdDevPlayer.__getattribute__(statInQuestion))
+    else:
+        return 0
+    return tempDevs
+
+
+def CalculateAvgOfDeviationsForPlayer(tempPlayer):
+    player = Player()
+    sumOfDevs = 0
+    members = [attr for attr in dir(tempPlayer) if not callable(getattr(tempPlayer, attr)) and not attr.startswith("__")]
+    for everyMember in members:
+        if everyMember != "name":
+            sumOfDevs += tempPlayer.__getattribute__(everyMember)
+    # Needs to be -3 to offset the name, runningScore, and GreatnessScore catagories.
+    return sumOfDevs/(len(members)-3)
 
 
 def ReadTextFile():
@@ -111,6 +147,23 @@ def ReadTextFile():
         mathPlayerList.append(tempPlayer)
     top100File.close()
     return mathPlayerList
+
+
+def SortByGreatness(mathPlayerSet):
+    mathPlayerSet.sort(key=SortGreatnessScore, reverse = True)
+    return mathPlayerSet
+
+# Called in function immidiately above.
+def SortGreatnessScore(player):
+    return player.finalGreatnessScore
+
+
+def PrintList(PlayerList):
+    index = 1
+    for everyPlayer in PlayerList:
+        print(index, everyPlayer.name, "\tGreatness Score: ", everyPlayer.finalGreatnessScore)
+        index += 1
+
 
 #used for testing when the file has been built.
 RunFinalCalculations()
