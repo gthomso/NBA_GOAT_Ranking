@@ -1,5 +1,6 @@
 class Player:
-    
+    def __init__(self) -> None:
+        pass
         
     name = ''
     all_stars = 0

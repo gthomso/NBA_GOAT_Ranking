@@ -36,10 +36,24 @@ def sortRunningScore(player):
 
 
 # Going to save all averages as a Player setting to access later
-def FindAverageForAllCatagories(inputPlayerList):
+def FindAverageForAllCatagories():
+    mathPlayerList = ReadTextFile()
     avgPlayer = Player()
+    members = [attr for attr in dir(avgPlayer) if not callable(getattr(avgPlayer, attr)) and not attr.startswith("__")]
+    for everyMember in members:
+        if everyMember != "name":
+            setattr(avgPlayer, everyMember, FindAverageForCatagory(mathPlayerList, everyMember))
+    #avgPlayer.all_stars = FindAverageForCatagory(mathPlayerList, "all_stars")
+    return avgPlayer
 
-    return
+
+def FindAverageForCatagory(mathPlayerList, statBeingFound):
+    # finds the average of the specified catagory
+    runningSum = 0
+    player = Player()
+    for everyPlayer in mathPlayerList:
+        runningSum += float(everyPlayer.__getattribute__(statBeingFound))
+    return round(runningSum/len(mathPlayerList), 2)
 
 
 def ReadTextFile():
@@ -65,4 +79,4 @@ def ReadTextFile():
     return mathPlayerList
 
 #used for testing when the file has been built.
-#ReadTextFile()
+FindAverageForAllCatagories()
